@@ -206,23 +206,34 @@
 
 package com.example.SecurityAndJwt.Controller;
 
+import com.example.SecurityAndJwt.DTO.AppUserDTO;
+import com.example.SecurityAndJwt.DTO.LogInBody;
 import com.example.SecurityAndJwt.DTO.UserUpdateDTO;
 import com.example.SecurityAndJwt.Model.AppUser;
 import com.example.SecurityAndJwt.Services.UserService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/user")
 @Tag(name = "User API", description = "Provides the user API")
 public class UserController {
+    @Autowired
+    private AuthenticationManager authenticationManager;
 
     private final UserService userService;
     private final Logger log = LoggerFactory.getLogger(UserController.class);
@@ -334,6 +345,37 @@ public class UserController {
         }
         userService.removeRoleFromUser(email, roleName);
         return ResponseEntity.ok("Role removed from user");
+    }
+    @PostMapping("/login")
+    public ResponseEntity<?> login(@RequestBody LogInBody body) {
+        log.trace("Logging in user with email: " + body.getEmail());
+
+        AppUser appUser = userService.getUserByEmail(body.getEmail());
+        if (appUser == null) {
+            return new ResponseEntity<>("User not found with email: " + body.getEmail(), HttpStatus.NOT_FOUND);
+        }
+
+        try {
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(body.getEmail(), body.getPassword())
+            );
+
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+
+            // Convert AppUser to Secure DTO (No password exposure)
+            AppUserDTO userDTO = userService.convertToDTO(appUser);
+
+            // Create Response Object with Message + Secure User Data
+            Map<String, Object> response = new HashMap<>();
+            response.put("message", "User logged in successfully");
+            response.put("user", userDTO);
+
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            log.error("Login failed for user: " + body.getEmail(), e);
+            return new ResponseEntity<>("Invalid credentials", HttpStatus.UNAUTHORIZED);
+        }
     }
 }
 //@PostMapping("/login")
