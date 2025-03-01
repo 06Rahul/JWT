@@ -3,6 +3,7 @@ package com.example.SecurityAndJwt;
 import com.example.SecurityAndJwt.Model.AppUser;
 import com.example.SecurityAndJwt.Model.Role;
 import com.example.SecurityAndJwt.Services.UserService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -11,6 +12,8 @@ import org.springframework.context.annotation.Bean;
 import java.util.ArrayList;
 
 @SpringBootApplication
+@Tag(name = "user API" , description = "provides the user API")
+
 public class SecurityAndJwtApplication {
 
 	public static void main(String[] args) {

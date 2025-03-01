@@ -209,6 +209,7 @@ package com.example.SecurityAndJwt.Controller;
 import com.example.SecurityAndJwt.DTO.UserUpdateDTO;
 import com.example.SecurityAndJwt.Model.AppUser;
 import com.example.SecurityAndJwt.Services.UserService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -220,6 +221,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/user")
+@Tag(name = "User API", description = "Provides the user API")
 public class UserController {
 
     private final UserService userService;
@@ -229,6 +231,7 @@ public class UserController {
         this.userService = userService;
     }
 
+    @Tag(name = "Fetch All User")
     @GetMapping("/")
     public ResponseEntity<?> getAllUsers() {
         log.trace("Fetching all users");
